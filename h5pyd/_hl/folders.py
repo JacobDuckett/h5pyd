@@ -68,6 +68,12 @@ class Folder:
             return False
 
     @property
+    def endpoint(self):
+        """Endpoint of the current connection"""
+        # created as property without setter to deter users from switching endpoints
+        return self._endpoint
+
+    @property
     def info(self):
         # TODO:
         pass
@@ -113,11 +119,13 @@ class Folder:
 
         if mode is None:
             mode = 'r'
+        self.mode = mode
 
         cfg = Config()  # pulls in state from a .hscfg file (if found).
 
         if endpoint is None and "hs_endpoint" in cfg:
             endpoint = cfg["hs_endpoint"]
+        self._endpoint = endpoint
 
         if username is None and "hs_username" in cfg:
             username = cfg["hs_username"]
@@ -167,6 +175,7 @@ class Folder:
             if rsp.status_code != 201:
                 self._http_conn.close()
                 raise IOError(rsp.status_code, rsp.reason)
+
         elif rsp.status_code != 200:
             # folder must exist
             if rsp.status_code < 500:
@@ -176,6 +185,7 @@ class Folder:
             raise IOError(rsp.status_code, rsp.reason)
         domain_json = json.loads(rsp.text)
         self.log.info("domain_json: {}".format(domain_json))
+
         if "class" in domain_json:
             if domain_json["class"] != "folder":
                 self.log.warning("Not a folder domain")
@@ -186,18 +196,10 @@ class Folder:
         else:
             self._obj_class = "folder"
         self._name = domain_name
-        if "created" in domain_json:
-            self._created = domain_json['created']
-        else:
-            self._created = None
-        if "lastModified" in domain_json:
-            self._modified = domain_json['lastModified']
-        else:
-            self._modified = None
-        if "owner" in domain_json:
-            self._owner = domain_json["owner"]
-        else:
-            self._owner = None
+
+        self._created = domain_json.get('created')
+        self._modified = domain_json.get('lastModified')
+        self._owner = domain_json.get("owner")
 
     def getACL(self, username):
         if self._http_conn is None:
@@ -387,9 +389,8 @@ class Folder:
         pass
 
     def __repr__(self):
-        # TODO: return <HSDS folder {url} (mode {mode})>
 
-        return self.domain
+        return '<HSDS folder (endpoint: "{}", domain: "{}") (mode {})>'.format(self.endpoint, self.domain, self.mode)
 
     def __str__(self):
         # TODO: Return info
