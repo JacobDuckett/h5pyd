@@ -20,8 +20,7 @@ from .httpconn import HttpConn
 from .config import Config
 
 
-class Folder():
-
+class Folder:
     """
         Represents a folder of domains
     """
@@ -42,7 +41,6 @@ class Folder():
             return None
         else:
             return op.dirname(self._domain) + '/'
-
 
     @property
     def modified(self):
@@ -68,9 +66,9 @@ class Folder():
         else:
             return False
 
-
     def __init__(self, domain_name, pattern=None, query=None, mode=None, endpoint=None,
-        username=None, password=None, bucket=None, api_key=None, logger=None, owner=None, batch_size=1000, **kwds):
+                 username=None, password=None, bucket=None, api_key=None, logger=None, owner=None, batch_size=1000,
+                 **kwds):
         """Create a new Folders object.
 
         domain_name
@@ -129,7 +127,7 @@ class Folder():
                 api_key = cfg["hs_api_key"]
 
         self._http_conn = HttpConn(self._domain, endpoint=endpoint, username=username,
-            password=password, bucket=bucket, api_key=api_key, mode=mode, logger=logger)
+                                   password=password, bucket=bucket, api_key=api_key, mode=mode, logger=logger)
         self.log = self._http_conn.logging
 
         domain_json = None
@@ -225,7 +223,6 @@ class Folder():
         if rsp.status_code != 201:
             raise IOError(rsp.status_code, rsp.reason)
 
-
     def _getSubdomains(self):
         if self._http_conn is None:
             raise IOError(400, "folder is not open")
@@ -266,7 +263,6 @@ class Folder():
             self._subdomain_marker = None  # we got all the domains
         return count
 
-
     def close(self):
         """ Clears reference to remote resource.
         """
@@ -306,7 +302,7 @@ class Folder():
         rsp = self._http_conn.DELETE(req, headers=headers, params=params)
         if rsp.status_code != 200:
             raise IOError(rsp.status_code, rsp.reason)
-        self._subdomains = None # reset the cache list
+        self._subdomains = None  # reset the cache list
         self._subdomain_marker = None
 
     def __delitem__(self, name):
@@ -323,7 +319,6 @@ class Folder():
             count = self._getSubdomains()
         return len(self._subdomains)
 
-
     def __iter__(self):
         """ Iterate over subdomain names """
         if self._http_conn is None:
@@ -339,7 +334,6 @@ class Folder():
             domain = self._subdomains[index]
             index += 1
             yield op.basename(domain['name'])
-
 
     def __contains__(self, name):
         """ Test if a member name exists """
@@ -360,7 +354,6 @@ class Folder():
                 found = True
                 break
         return found
-
 
     def __enter__(self):
         return self
