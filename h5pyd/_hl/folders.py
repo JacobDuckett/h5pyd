@@ -37,6 +37,7 @@ class Folder:
 
     @property
     def parent(self):
+        # TODO: Return parent object instead of str
         if self._domain is None:
             return None
         else:
@@ -65,6 +66,21 @@ class Folder:
             return True
         else:
             return False
+
+    @property
+    def info(self):
+        # TODO:
+        pass
+
+    @property
+    def subdomains(self):
+        # TODO:
+        pass
+
+    @property
+    def subfolders(self):
+        # TODO:
+        pass
 
     def __init__(self, domain_name, pattern=None, query=None, mode=None, endpoint=None,
                  username=None, password=None, bucket=None, api_key=None, logger=None, owner=None, batch_size=1000,
@@ -271,6 +287,7 @@ class Folder:
         self._http_conn = None
 
     def __getitem__(self, name):
+        # TODO: Change to return object at the given path
         """ Get a domain  """
         if self._http_conn is None:
             raise IOError(400, "folder is not open")
@@ -286,6 +303,14 @@ class Folder:
             if count == 0:
                 break
         return None
+
+    def create_subdomain(self):
+        # TODO:
+        pass
+
+    def create_subfolder(self):
+        # TODO:
+        pass
 
     def delete_item(self, name, keep_root=False):
         """ delete domain """
@@ -362,5 +387,10 @@ class Folder:
         pass
 
     def __repr__(self):
+        # TODO: return <HSDS folder {url} (mode {mode})>
 
         return self.domain
+
+    def __str__(self):
+        # TODO: Return info
+        pass
