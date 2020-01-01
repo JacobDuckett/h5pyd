@@ -20,6 +20,10 @@ from .httpconn import HttpConn
 from .config import Config
 
 
+class FolderError(Exception):
+    pass
+
+
 class Folder:
     """
         Represents a folder of domains
@@ -37,11 +41,12 @@ class Folder:
 
     @property
     def parent(self):
-        # TODO: Return parent object instead of str
         if self._domain is None:
-            return None
+            raise FolderError("No parent object available, already at the root folder.")
         else:
-            return op.dirname(self._domain) + '/'
+            path = op.dirname(self._domain) + '/'
+            path = path.replace('//', '/')  # Handle root folder
+            return Folder(path)
 
     @property
     def modified(self):
