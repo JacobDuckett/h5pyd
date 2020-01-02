@@ -80,17 +80,25 @@ class Folder:
 
     @property
     def info(self):
-        # TODO:
-        pass
+        if self.domain == '/':  # In root folder
+            pass  # TODO: Not sure
+        else:
+            rsp = self._http_conn.GET('/', use_cache=False)
+            domain_json = json.loads(rsp.text)
+            keys = ('class', 'owner', 'created', 'lastModified')
+            info_dict = {k: domain_json[k] for k in keys}
+            info_dict.update({'name': self.domain})
+            return info_dict
+
 
     @property
     def subdomains(self):
-        # TODO:
+        # TODO: Subdomains
         pass
 
     @property
     def subfolders(self):
-        # TODO:
+        # TODO: Subfolders
         pass
 
     def __init__(self, domain_name, pattern=None, query=None, mode=None, endpoint=None,
@@ -195,9 +203,11 @@ class Folder:
             if domain_json["class"] != "folder":
                 self.log.warning("Not a folder domain")
             self._obj_class = domain_json["class"]
+
         elif "root" in domain_json:
             # open with Folder but actually has a root group
             self._obj_class = "domain"
+
         else:
             self._obj_class = "folder"
         self._name = domain_name
@@ -312,11 +322,11 @@ class Folder:
         return None
 
     def create_subdomain(self):
-        # TODO:
+        # TODO: Create a subdomain at this location
         pass
 
     def create_subfolder(self):
-        # TODO:
+        # TODO: Create a subfolder at this location
         pass
 
     def delete_item(self, name, keep_root=False):
@@ -398,5 +408,4 @@ class Folder:
         return '<HSDS folder (endpoint: "{}", domain: "{}") (mode {})>'.format(self.endpoint, self.domain, self.mode)
 
     def __str__(self):
-        # TODO: Return info
-        pass
+        return self.info
