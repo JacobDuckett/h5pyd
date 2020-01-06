@@ -16,6 +16,7 @@ import os
 import os.path as op
 import json
 import logging
+from .files import File
 from .httpconn import HttpConn
 from .config import Config
 
@@ -303,23 +304,38 @@ class Folder:
         self._http_conn.close()
         self._http_conn = None
 
-    def __getitem__(self, name):
-        # TODO: Change to return object at the given path
-        """ Get a domain  """
+    def __getitem__(self, path):
+        """ Get a folder or H5File object contained within the folder based on the given path. """
         if self._http_conn is None:
             raise IOError(400, "folder is not open")
-        if self._subdomains is None:
-            self._getSubdomains()
-        while True:
-            domains = self._subdomains
-            for domain in domains:
-                if op.basename(domain["name"]) == name:
-                    return domain
-            # see if we can fetch more domains
-            count = self._getSubdomains()
-            if count == 0:
-                break
-        return None
+
+        # Strip / add slashes as needed
+        if path[0] == '/':
+            path = path[1:]
+        if path[-1] == '/':
+            path = path[:-1]
+
+        domain = self.domain + path
+        params = {'domain': domain}
+
+        rsp = self._http_conn.GET('/', params=params)
+
+        if rsp.status_code != 200:
+            raise IOError(rsp.status_code, rsp.reason)
+
+        rsp_json = json.loads(rsp.text)
+        rsp_class = rsp_json['class']
+
+        if rsp_class == 'folder':
+            cls = Folder
+            domain += '/'
+        elif rsp_class == 'domain':
+            cls = File
+        else:
+            return ValueError('Item class is neither Folder nor File.')
+
+        return cls(domain)
+
 
     def create_subdomain(self):
         # TODO: Create a subdomain at this location
