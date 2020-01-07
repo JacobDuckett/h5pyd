@@ -81,16 +81,15 @@ class Folder:
 
     @property
     def info(self):
-        if self.domain == '/':  # In root folder
-            pass  # TODO: Not sure
-        else:
-            rsp = self._http_conn.GET('/', use_cache=False)
-            domain_json = json.loads(rsp.text)
-            keys = ('class', 'owner', 'created', 'lastModified')
-            info_dict = {k: domain_json[k] for k in keys}
-            info_dict.update({'name': self.domain})
-            return info_dict
 
+        info_dict = {'class': self._obj_class,
+                     'lastModified': self._last_modified,
+                     'created': self._created,
+                     'owner': self._owner,
+                     'name': self.domain,
+                     }
+
+        return info_dict
 
     @property
     def subdomains(self):
@@ -198,6 +197,11 @@ class Folder:
                 self.log.error("status_code: {}".format(rsp.status_code))
             raise IOError(rsp.status_code, rsp.reason)
         domain_json = json.loads(rsp.text)
+
+        self._created = domain_json.get('created')
+        self._last_modified = domain_json.get('lastModified')
+        self._owner = domain_json.get("owner", 'admin')
+
         self.log.info("domain_json: {}".format(domain_json))
 
         if "class" in domain_json:
@@ -211,11 +215,6 @@ class Folder:
 
         else:
             self._obj_class = "folder"
-        self._name = domain_name
-
-        self._created = domain_json.get('created')
-        self._modified = domain_json.get('lastModified')
-        self._owner = domain_json.get("owner")
 
     def getACL(self, username):
         if self._http_conn is None:
@@ -336,7 +335,6 @@ class Folder:
 
         return cls(domain)
 
-
     def create_subdomain(self):
         # TODO: Create a subdomain at this location
         pass
@@ -350,7 +348,7 @@ class Folder:
         if self._http_conn is None:
             raise IOError(400, "folder is not open")
         if self._http_conn.mode == 'r':
-            raise IOError(400, "folder is open as read-onnly")
+            raise IOError(400, "folder is open as read-only")
         domain = self._domain + '/' + name
         headers = self._http_conn.getHeaders()
         req = '/'
