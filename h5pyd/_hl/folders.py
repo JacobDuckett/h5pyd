@@ -93,13 +93,19 @@ class Folder:
 
     @property
     def subdomains(self):
-        # TODO: Subdomains
         pass
 
     @property
+    def subfiles(self):
+        self._getSubdomains()
+        files = (File(i['name']) for i in self._subdomains if i.get('class', False) == "domain")
+        return files
+
+    @property
     def subfolders(self):
-        # TODO: Subfolders
-        pass
+        self._getSubdomains()
+        folders = (Folder(i['name'] + '/') for i in self._subdomains if i.get('class', False) == "folder")
+        return folders
 
     def __init__(self, domain_name, pattern=None, query=None, mode=None, endpoint=None,
                  username=None, password=None, bucket=None, api_key=None, logger=None, owner=None, batch_size=1000,
