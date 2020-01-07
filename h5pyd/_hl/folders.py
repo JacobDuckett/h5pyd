@@ -92,20 +92,18 @@ class Folder:
         return info_dict
 
     @property
-    def subdomains(self):
-        pass
+    def domains(self):
+        if self._domain_objects is None:
+            self._getSubdomains()
+            self._domain_objects = (File(subdomain['name']) for subdomain in self._subdomains if subdomain.get('class', False) == "domain")
+        return self._domain_objects
 
     @property
-    def subfiles(self):
-        self._getSubdomains()
-        files = (File(i['name']) for i in self._subdomains if i.get('class', False) == "domain")
-        return files
-
-    @property
-    def subfolders(self):
-        self._getSubdomains()
-        folders = (Folder(i['name'] + '/') for i in self._subdomains if i.get('class', False) == "folder")
-        return folders
+    def folders(self):
+        if self._folder_objects is None:
+            self._getSubdomains()
+            self._folder_objects = (Folder(subdomain['name'] + '/') for subdomain in self._subdomains if subdomain.get('class', False) == "folder")
+        return self._folder_objects
 
     def __init__(self, domain_name, pattern=None, query=None, mode=None, endpoint=None,
                  username=None, password=None, bucket=None, api_key=None, logger=None, owner=None, batch_size=1000,
@@ -159,8 +157,11 @@ class Folder:
             self._domain = None
         else:
             self._domain = domain_name[:-1]
+
         self._subdomains = None
         self._subdomain_marker = None
+        self._folder_objects = None
+        self._domain_objects = None
         self._batch_size = batch_size
 
         if api_key is None:
@@ -341,11 +342,11 @@ class Folder:
 
         return cls(domain)
 
-    def create_subdomain(self):
+    def create_domain(self):
         # TODO: Create a subdomain at this location
         pass
 
-    def create_subfolder(self):
+    def create_folder(self):
         # TODO: Create a subfolder at this location
         pass
 
